@@ -16,6 +16,8 @@
   --overlay-bg: rgba(10, 10, 20, 0.75);
   --shadow: rgba(0, 0, 0, 0.6);
   --block-highlight: rgba(255, 255, 255, 0.12);
+  --highlight-text: #ffd54f;
+  --highlight-bg: rgba(255, 213, 79, 0.12);
 }
 
 :root[data-theme="light"] {
@@ -36,6 +38,8 @@
   --overlay-bg: rgba(242, 243, 248, 0.8);
   --shadow: rgba(40, 40, 80, 0.2);
   --block-highlight: rgba(255, 255, 255, 0.35);
+  --highlight-text: #b26a00;
+  --highlight-bg: rgba(255, 179, 0, 0.15);
 }
 
 *, *::before, *::after {
@@ -308,6 +312,114 @@ kbd {
 
 #restart-btn:hover {
   background: var(--accent-hover);
+}
+
+/* ---- Records ---- */
+.records {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.name-form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--highlight-text);
+}
+
+.name-row {
+  display: flex;
+  gap: 6px;
+}
+
+.name-form input {
+  width: 140px;
+  padding: 6px 8px;
+  border: 1px solid var(--kbd-border);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  user-select: text;
+}
+
+.name-form input:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.name-form button {
+  background: var(--accent);
+  color: var(--accent-contrast);
+  border: none;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.records-table {
+  border-collapse: collapse;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 13px;
+  min-width: 380px;
+}
+
+.records-table th {
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: var(--label);
+  font-weight: 600;
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.records-table td {
+  padding: 4px 8px;
+  color: var(--text);
+}
+
+.records-table td:nth-child(2) {
+  text-align: left;
+}
+
+.records-table td.empty {
+  color: var(--muted);
+  font-style: italic;
+  text-align: center;
+}
+
+.records-table tr.highlight td {
+  color: var(--highlight-text);
+  background: var(--highlight-bg);
+  font-weight: 700;
+}
+
+.records-best {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.records-best .new {
+  color: var(--highlight-text);
+  font-weight: 700;
+}
+
+.link-btn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 11px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.link-btn:hover {
+  color: var(--danger);
 }
 
 .hidden {
