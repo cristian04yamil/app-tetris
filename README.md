@@ -39,6 +39,7 @@ Es una versión jugable del Tetris clásico con todas las mecánicas que esperar
 - **Soft drop** (bajada acelerada) y **hard drop** (caída instantánea).
 - **Pieza fantasma** (_ghost piece_): muestra dónde aterrizará la pieza actual.
 - **Vista previa** de la siguiente pieza.
+- **Hold** (reservar pieza): guarda la pieza actual para más tarde o la intercambia con la reservada; una vez por pieza (el slot se atenúa hasta que la pieza se asienta).
 - **Sistema de puntuación** clásico de Tetris (100 / 300 / 500 / 800 multiplicado por nivel).
 - **Niveles** que aumentan cada 10 líneas y aceleran la caída.
 - **Pausa** y **Game Over** con opción de reinicio.
@@ -85,6 +86,7 @@ Después abre `http://localhost:8000` en el navegador.
 | `↑` o `X` | Rotar la pieza en sentido horario |
 | `↓`       | Soft drop (bajar más rápido)      |
 | `Espacio` | Hard drop (caída instantánea)     |
+| `C` o `Shift` | Hold: reservar / intercambiar pieza (una vez por pieza) |
 | `P`       | Pausar / reanudar                 |
 
 ---
@@ -98,6 +100,7 @@ El juego se compone de tres archivos que cooperan:
 Define la estructura visual:
 
 - Un `<canvas id="board">` de **300 × 600** píxeles donde se renderiza el tablero.
+- Un panel a la izquierda con el slot `HOLD` (`<canvas id="hold-canvas">`).
 - Un panel lateral con `SCORE`, `LINES`, `LEVEL`, vista de la siguiente pieza y la lista de controles.
 - Una barra de navegación (`<nav>`) con el switch de tema claro/oscuro.
 - Un overlay para los estados **PAUSA** y **GAME OVER**.
@@ -119,6 +122,7 @@ Contiene toda la lógica del juego. A grandes rasgos:
 - **Puntuación**: usa la tabla clásica `[0, 100, 300, 500, 800]` multiplicada por el nivel actual; el hard drop suma 2 puntos por celda recorrida y el soft drop 1 punto por fila.
 - **Nivel y velocidad**: el nivel sube cada 10 líneas; la velocidad de caída se calcula como `max(100, 1000 − (level − 1) × 90)` milisegundos.
 - **Tema** (`applyTheme`): alterna `data-theme` en `<html>`, guarda la preferencia en `localStorage`, cachea los colores del canvas (grilla y brillo de bloques) leídos de las variables CSS y redibuja tablero y vista previa, incluso en pausa o game over.
+- **Hold** (`holdPiece`): guarda la pieza actual (reseteada a su orientación de spawn) en `hold`, o la intercambia si ya había una. `holdUsed` lo bloquea hasta el próximo `lockPiece()`; mientras tanto el canvas de hold lleva la clase `.locked` (atenuado).
 - **Ghost piece** (`ghostY`): proyecta la posición final de la pieza actual hacia abajo y la dibuja con `globalAlpha = 0.2`.
 
 ### Flujo del juego
@@ -136,7 +140,7 @@ init()
      ├─ draw()  (grid + tablero + ghost + pieza actual)
      └─ requestAnimationFrame(loop)
 
-   keydown → mover / rotar / soft-drop / hard-drop / pausa
+   keydown → mover / rotar / soft-drop / hard-drop / hold / pausa
 ```
 
 Cuando una pieza recién generada ya colisiona al aparecer (`spawn`), se dispara `endGame()` y se muestra el overlay de **Game Over**.
@@ -145,7 +149,7 @@ Cuando una pieza recién generada ya colisiona al aparecer (`spawn`), se dispara
 
 ## Tecnologías
 
-- **HTML5** — marcado y dos elementos `<canvas>` (tablero y vista previa).
+- **HTML5** — marcado y tres elementos `<canvas>` (tablero, vista previa y hold).
 - **CSS3** — _flexbox_, variables de color, `backdrop-filter` y `box-shadow`.
 - **JavaScript (ES6+) vanilla** — `const`/`let`, _arrow functions_, _spread operator_, `Array.from`, _template literals_…
 - **Canvas 2D API** — para todo el renderizado del juego.

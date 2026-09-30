@@ -166,11 +166,21 @@ body {
   letter-spacing: 1px;
 }
 
-#next-canvas {
+#next-canvas,
+#hold-canvas {
   display: block;
   border: 1px solid var(--border);
   background: var(--surface);
   border-radius: 4px;
+}
+
+.hold-panel {
+  width: auto;
+}
+
+/* hold ya usado en el turno actual */
+#hold-canvas.locked {
+  opacity: 0.35;
 }
 
 /* ---- Controles ---- */
