@@ -167,7 +167,8 @@ body {
 }
 
 #next-canvas,
-#hold-canvas {
+#hold-canvas,
+#queue-canvas {
   display: block;
   border: 1px solid var(--border);
   background: var(--surface);
@@ -180,6 +181,51 @@ body {
 
 /* hold ya usado en el turno actual */
 #hold-canvas.locked {
+  opacity: 0.35;
+}
+
+/* ---- Energía ---- */
+.energy-bar {
+  height: 10px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: var(--kbd-bg);
+  overflow: hidden;
+}
+
+.energy-fill {
+  width: 0;
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.3s;
+}
+
+.energy-bar.full .energy-fill {
+  background: #ffd54f;
+  animation: energy-pulse 1s ease-in-out infinite;
+}
+
+@keyframes energy-pulse {
+  50% { opacity: 0.6; }
+}
+
+.energy-status {
+  min-height: 14px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* ---- Menú de habilidades ---- */
+.ability-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: left;
+  font-size: 14px;
+}
+
+.ability-list li.disabled {
   opacity: 0.35;
 }
 
@@ -262,4 +308,8 @@ kbd {
 
 #restart-btn:hover {
   background: var(--accent-hover);
+}
+
+.hidden {
+  display: none;
 }
