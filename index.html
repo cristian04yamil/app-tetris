@@ -74,6 +74,26 @@
         <p id="overlay-title">GAME OVER</p>
         <p id="overlay-score"></p>
         <ul id="ability-list" class="ability-list hidden"></ul>
+        <div id="records" class="records hidden">
+          <form id="name-form" class="name-form hidden" autocomplete="off">
+            <label for="name-input">¡Entraste al top 5! Tu nombre:</label>
+            <div class="name-row">
+              <input id="name-input" type="text" maxlength="12" value="Jugador" />
+              <button type="submit" id="save-record-btn">Guardar</button>
+            </div>
+          </form>
+          <span class="label">RECORDS</span>
+          <table class="records-table">
+            <thead>
+              <tr><th>#</th><th>Nombre</th><th>Puntos</th><th>Líneas</th><th>Nv</th><th>Combo</th><th>Fecha</th></tr>
+            </thead>
+            <tbody id="records-body"></tbody>
+          </table>
+          <p class="records-best">
+            Mejor combo: <span id="best-combo">0</span> · Líneas máximas: <span id="max-lines">0</span>
+          </p>
+          <button type="button" id="reset-records-btn" class="link-btn">Resetear records</button>
+        </div>
         <button id="restart-btn">Reiniciar</button>
       </div>
     </div>
