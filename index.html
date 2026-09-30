@@ -63,7 +63,7 @@
             <li><kbd>Space</kbd> caída</li>
             <li><kbd>C</kbd><kbd>Shift</kbd> reservar</li>
             <li><kbd>E</kbd> habilidad</li>
-            <li><kbd>P</kbd> pausa</li>
+            <li><kbd>P</kbd><kbd>Esc</kbd> pausa</li>
           </ul>
         </div>
       </aside>
@@ -74,6 +74,31 @@
         <p id="overlay-title">GAME OVER</p>
         <p id="overlay-score"></p>
         <ul id="ability-list" class="ability-list hidden"></ul>
+        <div id="pause-menu" class="pause-menu hidden">
+          <div id="pause-main" class="pause-view">
+            <button type="button" class="menu-item" data-action="resume">Reanudar</button>
+            <button type="button" class="menu-item" data-action="restart">Reiniciar</button>
+            <button type="button" class="menu-item" data-action="controls">Ver controles</button>
+            <div class="menu-item level-item" data-action="level">
+              <button type="button" class="level-step" data-delta="-1" aria-label="Bajar nivel inicial">‹</button>
+              <span>Nivel inicial: <strong id="start-level-value">1</strong></span>
+              <button type="button" class="level-step" data-delta="1" aria-label="Subir nivel inicial">›</button>
+            </div>
+            <p class="pause-hint">↑↓ elegir · Enter aceptar · ←→ nivel<br />El nivel inicial aplica a la próxima partida</p>
+          </div>
+          <div id="pause-controls" class="pause-view hidden">
+            <ul class="pause-keys">
+              <li><span><kbd>←</kbd><kbd>→</kbd></span> mover</li>
+              <li><span><kbd>↑</kbd><kbd>X</kbd></span> rotar</li>
+              <li><span><kbd>↓</kbd></span> soft drop</li>
+              <li><span><kbd>Space</kbd></span> hard drop</li>
+              <li><span><kbd>C</kbd><kbd>Shift</kbd></span> reservar</li>
+              <li><span><kbd>E</kbd></span> habilidad</li>
+              <li><span><kbd>P</kbd><kbd>Esc</kbd></span> pausa</li>
+            </ul>
+            <button type="button" class="menu-item" data-action="back">Volver</button>
+          </div>
+        </div>
         <button id="restart-btn">Reiniciar</button>
       </div>
     </div>

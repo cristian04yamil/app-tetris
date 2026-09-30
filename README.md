@@ -47,7 +47,14 @@ Es una versión jugable del Tetris clásico con todas las mecánicas que esperar
   4. **Deshacer última colocación**: restaura tablero, puntuación, líneas y piezas a como estaban al aparecer la última pieza fijada. Solo un nivel.
 - **Sistema de puntuación** clásico de Tetris (100 / 300 / 500 / 800 multiplicado por nivel).
 - **Niveles** que aumentan cada 10 líneas y aceleran la caída.
-- **Pausa** y **Game Over** con opción de reinicio.
+- **Menú de pausa** (`P` o `Esc`) con opciones navegables con mouse o teclado (`↑`/`↓` + `Enter`):
+  - **Reanudar**: vuelve al juego.
+  - **Reiniciar**: nueva partida sin recargar la página.
+  - **Ver controles**: lista de teclas dentro del menú (`Esc` vuelve).
+  - **Nivel inicial** (`←`/`→` o botones `‹` `›`, 1–10): nivel con el que empieza la **próxima** partida; se guarda en `localStorage`.
+
+  Mientras el menú está abierto ningún input llega al juego, y las teclas que se mantenían apretadas se ignoran al reanudar hasta soltarlas (sin movimientos accidentales).
+- **Game Over** con opción de reinicio.
 - **Toggle de tema claro/oscuro** en la barra de navegación (arranca en oscuro y recuerda tu preferencia en `localStorage`).
 
 ---
@@ -93,7 +100,9 @@ Después abre `http://localhost:8000` en el navegador.
 | `Espacio` | Hard drop (caída instantánea)     |
 | `C` o `Shift` | Hold: reservar / intercambiar pieza (una vez por pieza) |
 | `E`       | Con energía llena: abrir menú de habilidades (`1`–`4`, `Esc` cancela) |
-| `P`       | Pausar / reanudar                 |
+| `P` o `Esc` | Abrir / cerrar el menú de pausa (`Esc` cierra primero el menú de habilidades si está abierto) |
+
+En el menú de pausa: `↑` / `↓` eligen opción, `Enter` / `Espacio` aceptan, `←` / `→` cambian el nivel inicial.
 
 ---
 
@@ -109,7 +118,7 @@ Define la estructura visual:
 - Un panel a la izquierda con el slot `HOLD` (`<canvas id="hold-canvas">`) y la cola `QUEUE` (`<canvas id="queue-canvas">`, visible solo con la habilidad de ver piezas).
 - Un panel lateral con `SCORE`, `LINES`, `LEVEL`, la barra `ENERGY`, vista de la siguiente pieza y la lista de controles.
 - Una barra de navegación (`<nav>`) con el switch de tema claro/oscuro.
-- Un overlay para los estados **PAUSA** y **GAME OVER**.
+- Un overlay compartido para **PAUSA** (con el menú `#pause-menu`), el menú de habilidades y **GAME OVER**.
 
 ### 2. `style.css`
 
@@ -126,7 +135,8 @@ Contiene toda la lógica del juego. A grandes rasgos:
 - **Game loop** (`loop`): basado en `requestAnimationFrame`, acumula el tiempo transcurrido y baja la pieza una fila cuando se supera `dropInterval`.
 - **Limpieza de líneas** (`clearLines`): recorre el tablero de abajo hacia arriba; cada fila completa se elimina y se inserta una vacía en la cima.
 - **Puntuación**: usa la tabla clásica `[0, 100, 300, 500, 800]` multiplicada por el nivel actual; el hard drop suma 2 puntos por celda recorrida y el soft drop 1 punto por fila.
-- **Nivel y velocidad**: el nivel sube cada 10 líneas; la velocidad de caída se calcula como `max(100, 1000 − (level − 1) × 90)` milisegundos.
+- **Nivel y velocidad**: la partida arranca en `baseLevel` (copia de `startLevel` tomada en `init()`) y sube cada 10 líneas: `level = baseLevel + floor(lines / 10)`; la velocidad de caída se calcula como `max(100, 1000 − (level − 1) × 90)` milisegundos (`intervalFor`).
+- **Menú de pausa** (`pauseGame`/`resumeGame`, `handlePauseKey`, `pauseAction`): reutiliza el overlay con `#pause-menu` (vistas `#pause-main` y `#pause-controls`). Los botones nunca toman foco (se navega con `pauseIndex` y la clase `.selected`); las teclas presionadas durante la pausa van a `blockedKeys` y el juego las ignora hasta su `keyup`. Cambiar el nivel inicial persiste `startLevel` en `localStorage` pero no afecta la partida en curso.
 - **Tema** (`applyTheme`): alterna `data-theme` en `<html>`, guarda la preferencia en `localStorage`, cachea los colores del canvas (grilla y brillo de bloques) leídos de las variables CSS y redibuja tablero y vista previa, incluso en pausa o game over.
 - **Hold** (`holdPiece`): guarda la pieza actual (reseteada a su orientación de spawn) en `hold`, o la intercambia si ya había una. `holdUsed` lo bloquea hasta el próximo `lockPiece()`; mientras tanto el canvas de hold lleva la clase `.locked` (atenuado).
 - **Energía y habilidades** (`ABILITIES`): `clearLines` suma energía; `openMenu`/`closeMenu` detienen y reanudan el loop y reutilizan el overlay (`#ability-list`). Cada `run()` devuelve `true` (consume energía), `false` (no disponible) o `null` (abre el submenú de piezas). `spawn` toma `snapshot()` en `turnStart` y `lockPiece` lo guarda como `undoState`; las piezas se guardan por tipo porque se mutan al jugarse. `queue` guarda piezas ya generadas después de `next` y `peekCount` cuántas siguen reveladas.
@@ -147,7 +157,7 @@ init()
      ├─ draw()  (grid + tablero + ghost + pieza actual)
      └─ requestAnimationFrame(loop)
 
-   keydown → mover / rotar / soft-drop / hard-drop / hold / habilidad (E) / pausa
+   keydown → mover / rotar / soft-drop / hard-drop / hold / habilidad (E) / pausa (P, Esc)
 ```
 
 Cuando una pieza recién generada ya colisiona al aparecer (`spawn`), se dispara `endGame()` y se muestra el overlay de **Game Over**.
@@ -189,7 +199,9 @@ Algunos parámetros fáciles de tunear en `game.js`:
 | `BLOCK`        | Tamaño en píxeles de cada celda          | `30`                  |
 | `COLORS`       | Paleta de colores por tipo de pieza      | 7 colores             |
 | `LINE_SCORES`  | Puntos por 1, 2, 3 o 4 líneas eliminadas | `[0,100,300,500,800]` |
-| `dropInterval` | Velocidad inicial de caída en ms         | `1000`                |
+| `dropInterval` | Velocidad de caída en ms (`intervalFor(level)`) | `1000` en nivel 1 |
+| `MAX_START_LEVEL` | Nivel inicial máximo elegible en el menú de pausa | `10`          |
+| `START_LEVEL_KEY` | Clave de `localStorage` para el nivel inicial | `'tetris-start-level'` |
 | `ENERGY_PER_LINE` | Energía por línea (sobre `ENERGY_MAX` = 100) | `10`              |
 | `SLOW_DURATION`   | Duración de la ralentización en ms        | `10000`               |
 | `PEEK_COUNT`      | Piezas reveladas por la habilidad        | `5`                   |
