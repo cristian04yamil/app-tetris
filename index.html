@@ -22,6 +22,10 @@
           <span class="label">HOLD</span>
           <canvas id="hold-canvas" width="120" height="120"></canvas>
         </div>
+        <div class="panel-section hidden" id="queue-section">
+          <span class="label">QUEUE</span>
+          <canvas id="queue-canvas" width="120" height="240"></canvas>
+        </div>
       </aside>
 
       <canvas id="board" width="300" height="600"></canvas>
@@ -39,6 +43,11 @@
           <span class="label">LEVEL</span>
           <span class="value" id="level">1</span>
         </div>
+        <div class="panel-section">
+          <span class="label">ENERGY</span>
+          <div class="energy-bar" id="energy-bar"><div class="energy-fill" id="energy-fill"></div></div>
+          <span class="energy-status" id="energy-status"></span>
+        </div>
 
         <div class="panel-section">
           <span class="label">NEXT</span>
@@ -53,6 +62,7 @@
             <li><kbd>↓</kbd> bajar</li>
             <li><kbd>Space</kbd> caída</li>
             <li><kbd>C</kbd><kbd>Shift</kbd> reservar</li>
+            <li><kbd>E</kbd> habilidad</li>
             <li><kbd>P</kbd> pausa</li>
           </ul>
         </div>
@@ -63,6 +73,7 @@
       <div class="overlay-box">
         <p id="overlay-title">GAME OVER</p>
         <p id="overlay-score"></p>
+        <ul id="ability-list" class="ability-list hidden"></ul>
         <button id="restart-btn">Reiniciar</button>
       </div>
     </div>
