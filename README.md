@@ -42,6 +42,7 @@ Es una versión jugable del Tetris clásico con todas las mecánicas que esperar
 - **Sistema de puntuación** clásico de Tetris (100 / 300 / 500 / 800 multiplicado por nivel).
 - **Niveles** que aumentan cada 10 líneas y aceleran la caída.
 - **Pausa** y **Game Over** con opción de reinicio.
+- **Toggle de tema claro/oscuro** en la barra de navegación (arranca en oscuro y recuerda tu preferencia en `localStorage`).
 
 ---
 
@@ -98,11 +99,12 @@ Define la estructura visual:
 
 - Un `<canvas id="board">` de **300 × 600** píxeles donde se renderiza el tablero.
 - Un panel lateral con `SCORE`, `LINES`, `LEVEL`, vista de la siguiente pieza y la lista de controles.
+- Una barra de navegación (`<nav>`) con el switch de tema claro/oscuro.
 - Un overlay para los estados **PAUSA** y **GAME OVER**.
 
 ### 2. `style.css`
 
-Aporta el aspecto visual con estética _dark / retro arcade_: fondo oscuro, tipografía monoespaciada para los marcadores y _backdrop blur_ en los overlays.
+Aporta el aspecto visual con estética _dark / retro arcade_ por defecto. Los colores son variables CSS definidas en `:root` (tema oscuro) y sobrescritas en `:root[data-theme="light"]` (tema claro). Fondo oscuro, tipografía monoespaciada para los marcadores y _backdrop blur_ en los overlays.
 
 ### 3. `game.js`
 
@@ -116,6 +118,7 @@ Contiene toda la lógica del juego. A grandes rasgos:
 - **Limpieza de líneas** (`clearLines`): recorre el tablero de abajo hacia arriba; cada fila completa se elimina y se inserta una vacía en la cima.
 - **Puntuación**: usa la tabla clásica `[0, 100, 300, 500, 800]` multiplicada por el nivel actual; el hard drop suma 2 puntos por celda recorrida y el soft drop 1 punto por fila.
 - **Nivel y velocidad**: el nivel sube cada 10 líneas; la velocidad de caída se calcula como `max(100, 1000 − (level − 1) × 90)` milisegundos.
+- **Tema** (`applyTheme`): alterna `data-theme` en `<html>`, guarda la preferencia en `localStorage`, cachea los colores del canvas (grilla y brillo de bloques) leídos de las variables CSS y redibuja tablero y vista previa, incluso en pausa o game over.
 - **Ghost piece** (`ghostY`): proyecta la posición final de la pieza actual hacia abajo y la dibuja con `globalAlpha = 0.2`.
 
 ### Flujo del juego
@@ -157,7 +160,7 @@ Cuando una pieza recién generada ya colisiona al aparecer (`spawn`), se dispara
 ```
 03-tetris/
 ├── index.html      # Estructura del DOM y canvas
-├── style.css       # Estilos del juego (dark theme)
+├── style.css       # Estilos del juego (variables CSS, temas dark/light)
 ├── game.js         # Toda la lógica del Tetris (~300 líneas)
 └── README.md
 ```
@@ -176,6 +179,9 @@ Algunos parámetros fáciles de tunear en `game.js`:
 | `COLORS`       | Paleta de colores por tipo de pieza      | 7 colores             |
 | `LINE_SCORES`  | Puntos por 1, 2, 3 o 4 líneas eliminadas | `[0,100,300,500,800]` |
 | `dropInterval` | Velocidad inicial de caída en ms         | `1000`                |
+| `THEME_KEY`    | Clave de `localStorage` para el tema     | `'tetris-theme'`      |
+
+> Para ajustar los colores de cada tema, edita las variables CSS al inicio de `style.css`.
 
 > Si cambias `COLS`, `ROWS` o `BLOCK`, recuerda ajustar también `width` y `height` del `<canvas id="board">` en `index.html` para que coincida (`COLS × BLOCK` × `ROWS × BLOCK`).
 
