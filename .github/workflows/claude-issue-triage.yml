@@ -1,0 +1,77 @@
+name: Claude Issue Triage
+
+on:
+  issues:
+    types: [opened, edited]
+
+concurrency:
+  group: triage-${{ github.event.issue.number }}
+  cancel-in-progress: true
+
+jobs:
+  triage:
+    if: github.event.issue.pull_request == null && !endsWith(github.actor, '[bot]')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Run Claude Issue Triage
+        uses: anthropics/claude-code-action@v1
+        env:
+          GH_TOKEN: ${{ github.token }}
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          claude_args: '--allowedTools "Read,Glob,Grep,Write,Bash(gh label list:*),Bash(gh issue view:*),Bash(gh issue edit:*),Bash(gh issue comment:*)"'
+          prompt: |
+            REPO: ${{ github.repository }}
+            ISSUE: ${{ github.event.issue.number }}
+            EVENTO: ${{ github.event.action }}
+
+            Sos el encargado de hacer triage de issues de este repositorio (Tetris en JavaScript vanilla + HTML5 Canvas).
+            Respondé siempre en español. NO modifiques código del repo ni abras PRs.
+
+            Pasos:
+            1. Leé el issue: `gh issue view ${{ github.event.issue.number }} --json title,body,labels,comments`.
+            2. Listá los labels existentes: `gh label list --limit 100`.
+               - Elegí entre 1 y 3 labels que apliquen SOLO de esa lista. Nunca crees labels nuevos.
+               - Aplicalos con `gh issue edit ${{ github.event.issue.number }} --add-label "a,b"`.
+               - Si el issue fue editado y algún label que ya tiene dejó de aplicar, quitalo con `--remove-label`.
+            3. Usá CLAUDE.md como mapa y explorá el código relevante (game.js, index.html, style.css, README.md)
+               con Read/Glob/Grep para entender el problema.
+            4. Escribí el diagnóstico en el archivo `triage-comment.md` (en el directorio actual) con este formato exacto,
+               empezando por el marcador HTML:
+
+               <!-- claude-triage -->
+               ## 🤖 Diagnóstico automático
+
+               **Tipo:** bug | feature | mejora | pregunta | documentación
+               **Labels asignados:** ...
+
+               ### Resumen
+               Qué se reporta/pide, en 1-3 líneas.
+
+               ### Análisis / causa probable
+               Archivos y funciones involucradas (ej. `game.js` → `clearLines()`), con el razonamiento.
+
+               ### Propuesta de solución
+               Pasos concretos para implementarla.
+
+               ### Archivos afectados
+               Lista de archivos a modificar (recordá: si cambia gameplay, actualizar README.md).
+
+               ### Criterios de aceptación / riesgos
+               Cómo verificar que quedó resuelto y qué podría romperse.
+
+               ### Información faltante
+               Preguntas al autor si el issue es ambiguo (omitir la sección si no hace falta).
+
+            5. Publicá (o actualizá, si ya existe) el comentario de diagnóstico:
+               `gh issue comment ${{ github.event.issue.number }} --edit-last --create-if-none --body-file triage-comment.md`
