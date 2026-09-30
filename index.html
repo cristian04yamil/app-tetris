@@ -9,10 +9,15 @@
 <body>
   <nav class="navbar">
     <span class="nav-title">TETRIS</span>
-    <button id="theme-toggle" class="theme-toggle" type="button" role="switch" aria-checked="false" aria-label="Modo claro">
-      <span id="theme-label">Oscuro</span>
-      <span class="track"><span class="thumb"></span></span>
-    </button>
+    <div class="nav-controls">
+      <label class="skin-picker">Skin
+        <select id="skin-select" aria-label="Skin visual"></select>
+      </label>
+      <button id="theme-toggle" class="theme-toggle" type="button" role="switch" aria-checked="false" aria-label="Modo claro">
+        <span id="theme-label">Oscuro</span>
+        <span class="track"><span class="thumb"></span></span>
+      </button>
+    </div>
   </nav>
 
   <div class="wrapper">

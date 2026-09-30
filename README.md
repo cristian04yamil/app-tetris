@@ -49,6 +49,11 @@ Es una versión jugable del Tetris clásico con todas las mecánicas que esperar
 - **Niveles** que aumentan cada 10 líneas y aceleran la caída.
 - **Pausa** y **Game Over** con opción de reinicio.
 - **Toggle de tema claro/oscuro** en la barra de navegación (arranca en oscuro y recuerda tu preferencia en `localStorage`).
+- **Skins visuales** (selector `Skin` en la barra de navegación), se aplican al instante sin recargar y se recuerdan en `localStorage`:
+  - **Retro**: bloques cuadrados y colores planos (estilo por defecto).
+  - **Neon**: fondo negro y bloques con efecto _glow_ (`shadowBlur`).
+  - **Pastel**: colores suaves y bloques con bordes redondeados.
+  - **Pixel art**: textura de sub-píxeles claros/oscuros sobre cada bloque.
 
 ---
 
@@ -108,7 +113,7 @@ Define la estructura visual:
 - Un `<canvas id="board">` de **300 × 600** píxeles donde se renderiza el tablero.
 - Un panel a la izquierda con el slot `HOLD` (`<canvas id="hold-canvas">`) y la cola `QUEUE` (`<canvas id="queue-canvas">`, visible solo con la habilidad de ver piezas).
 - Un panel lateral con `SCORE`, `LINES`, `LEVEL`, la barra `ENERGY`, vista de la siguiente pieza y la lista de controles.
-- Una barra de navegación (`<nav>`) con el switch de tema claro/oscuro.
+- Una barra de navegación (`<nav>`) con el selector de skin (`<select id="skin-select">`) y el switch de tema claro/oscuro.
 - Un overlay para los estados **PAUSA** y **GAME OVER**.
 
 ### 2. `style.css`
@@ -128,6 +133,7 @@ Contiene toda la lógica del juego. A grandes rasgos:
 - **Puntuación**: usa la tabla clásica `[0, 100, 300, 500, 800]` multiplicada por el nivel actual; el hard drop suma 2 puntos por celda recorrida y el soft drop 1 punto por fila.
 - **Nivel y velocidad**: el nivel sube cada 10 líneas; la velocidad de caída se calcula como `max(100, 1000 − (level − 1) × 90)` milisegundos.
 - **Tema** (`applyTheme`): alterna `data-theme` en `<html>`, guarda la preferencia en `localStorage`, cachea los colores del canvas (grilla y brillo de bloques) leídos de las variables CSS y redibuja tablero y vista previa, incluso en pausa o game over.
+- **Skins** (`SKINS`, `applySkin`): cada skin define `label`, `colors` (alineados a `PIECES`, índice 0 = `null`), `grid` opcional y su propio `drawBlock(context, px, py, size, color)`. El `drawBlock` general delega en la skin activa, así tablero, ghost y previews cambian juntos. `applySkin` guarda `data-skin` en `<html>` (la skin neon fuerza fondo negro vía CSS) y llama a `redrawAll()`, igual que `applyTheme`. Retro, pastel y pixel siguen el tema claro/oscuro.
 - **Hold** (`holdPiece`): guarda la pieza actual (reseteada a su orientación de spawn) en `hold`, o la intercambia si ya había una. `holdUsed` lo bloquea hasta el próximo `lockPiece()`; mientras tanto el canvas de hold lleva la clase `.locked` (atenuado).
 - **Energía y habilidades** (`ABILITIES`): `clearLines` suma energía; `openMenu`/`closeMenu` detienen y reanudan el loop y reutilizan el overlay (`#ability-list`). Cada `run()` devuelve `true` (consume energía), `false` (no disponible) o `null` (abre el submenú de piezas). `spawn` toma `snapshot()` en `turnStart` y `lockPiece` lo guarda como `undoState`; las piezas se guardan por tipo porque se mutan al jugarse. `queue` guarda piezas ya generadas después de `next` y `peekCount` cuántas siguen reveladas.
 - **Ghost piece** (`ghostY`): proyecta la posición final de la pieza actual hacia abajo y la dibuja con `globalAlpha = 0.2`.
@@ -187,13 +193,15 @@ Algunos parámetros fáciles de tunear en `game.js`:
 | `COLS`         | Columnas del tablero                     | `10`                  |
 | `ROWS`         | Filas del tablero                        | `20`                  |
 | `BLOCK`        | Tamaño en píxeles de cada celda          | `30`                  |
-| `COLORS`       | Paleta de colores por tipo de pieza      | 7 colores             |
+| `SKINS`        | Skins: paleta por pieza + función de dibujo | `retro`, `neon`, `pastel`, `pixel` |
+| `DEFAULT_SKIN` | Skin inicial si no hay preferencia guardada | `'retro'`          |
 | `LINE_SCORES`  | Puntos por 1, 2, 3 o 4 líneas eliminadas | `[0,100,300,500,800]` |
 | `dropInterval` | Velocidad inicial de caída en ms         | `1000`                |
 | `ENERGY_PER_LINE` | Energía por línea (sobre `ENERGY_MAX` = 100) | `10`              |
 | `SLOW_DURATION`   | Duración de la ralentización en ms        | `10000`               |
 | `PEEK_COUNT`      | Piezas reveladas por la habilidad        | `5`                   |
 | `THEME_KEY`    | Clave de `localStorage` para el tema     | `'tetris-theme'`      |
+| `SKIN_KEY`     | Clave de `localStorage` para la skin     | `'tetris-skin'`       |
 
 > Para ajustar los colores de cada tema, edita las variables CSS al inicio de `style.css`.
 
